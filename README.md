@@ -53,7 +53,7 @@ Built for **fun and learning**, not production.
 
 ```bash
 # 1. clone & install
-git clone <this-repo> && cd clawd-coad
+git clone https://github.com/davebiagioni/clawd-coad.git && cd clawd-coad
 uv sync
 
 # 2. start a local model (one-time)
