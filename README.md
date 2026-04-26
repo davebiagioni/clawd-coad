@@ -21,6 +21,8 @@
 ![Status](https://img.shields.io/badge/status-learning%20project-FFB400?style=flat-square)
 ![LOC](https://img.shields.io/badge/code-~600%20LOC-9B59B6?style=flat-square)
 
+![clawd in action](demo/demo.gif)
+
 </div>
 
 ---
