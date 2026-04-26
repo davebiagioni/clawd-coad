@@ -1,7 +1,8 @@
+import os
 import subprocess
 from pathlib import Path
 
-WORKTREE_ROOT = Path("~/.clawd/worktrees").expanduser()
+WORKTREE_ROOT = Path(os.environ.get("CLAWD_WORKTREE_ROOT", "~/.clawd/worktrees")).expanduser()
 
 
 def _git(*args: str, cwd: Path | None = None) -> str:
