@@ -45,6 +45,22 @@ chapter stands alone.
 10. [Sandboxing with Docker](concepts/09-sandbox.md) — `Dockerfile`,
     `scripts/clawd-sandbox`
 
+## How-to
+
+Recipe-form guides for specific tasks. Read these when you have a
+particular thing you're trying to do.
+
+- [Add a new tool](how-to/add-a-tool.md) — give the agent a new capability.
+
+## Reference
+
+Lookup tables for facts you don't want to grep the source for.
+
+- [Configuration](reference/configuration.md) — every `CLAWD_*` and
+  `LANGFUSE_*` env var.
+- [Slash commands](reference/slash-commands.md) — `/help`, `/clear`,
+  `/diff`, `/cost`.
+
 ## Provider neutrality
 
 `clawd` defaults to a local OpenAI-compatible endpoint (Ollama with
