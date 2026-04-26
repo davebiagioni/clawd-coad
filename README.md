@@ -19,7 +19,9 @@
 ![Providers](https://img.shields.io/badge/providers-OpenAI--compatible%20%7C%20Anthropic-FF6F61?style=flat-square)
 ![Local-first](https://img.shields.io/badge/local--first-Ollama%20default-25A162?style=flat-square)
 ![Status](https://img.shields.io/badge/status-learning%20project-FFB400?style=flat-square)
-![LOC](https://img.shields.io/badge/code-~600%20LOC-9B59B6?style=flat-square)
+![Size](https://img.shields.io/badge/size-under%201k%20LOC-9B59B6?style=flat-square)
+
+![clawd in action](demo/demo.gif)
 
 </div>
 
@@ -27,7 +29,7 @@
 
 ## what is this
 
-**clawd** is a ~600-line coding agent in the spirit of Claude Code, Aider,
+**clawd** is a tiny coding agent in the spirit of Claude Code, Aider,
 and Cursor — small enough to read in an afternoon, hackable enough to
 actually learn from. Local models out of the box (Ollama default, no API
 bill); swap to OpenAI / Anthropic / OpenRouter / vLLM by editing a
@@ -55,11 +57,30 @@ Built for **fun and learning**, not production.
 # 1. clone & install
 git clone https://github.com/davebiagioni/clawd-coad.git && cd clawd-coad
 uv sync
+```
 
-# 2. start a local model (one-time)
+**2. pick a model — local *or* hosted, both equally supported:**
+
+```bash
+# 2a. local with ollama (no API key, no bill)
 ollama pull qwen2.5-coder:7b
 ollama serve  # in another terminal
+# (no .env needed — these are the defaults)
+```
 
+```bash
+# 2b. hosted with groq (free tier, fast, OpenAI-compatible)
+cat > .env <<EOF
+CLAWD_BASE_URL=https://api.groq.com/openai/v1
+CLAWD_MODEL=llama-3.3-70b-versatile
+CLAWD_API_KEY=gsk-...   # https://console.groq.com/keys
+EOF
+```
+
+See [providers, picked from a hat](#providers-picked-from-a-hat) below for
+OpenAI / Anthropic / OpenRouter / vLLM snippets — same shape.
+
+```bash
 # 3. cd into ANY git repo you want clawd to work on
 cd ~/your-project
 

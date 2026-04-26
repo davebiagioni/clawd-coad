@@ -1,7 +1,8 @@
 # clawd
 
 A small, hackable open-source coding agent CLI built on LangGraph. Read in an
-afternoon, fork it, swap a piece. ~600 LOC target.
+afternoon, fork it, swap a piece. Target: under 1k LOC across ~15 python files
+— if a change pushes us past that, it probably belongs in a fork or plugin.
 
 ## Why this matters when working on the code
 
