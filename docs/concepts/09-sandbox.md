@@ -139,7 +139,7 @@ doesn't show up as untracked noise in the host repo.
 
 We invoke `/app/.venv/bin/clawd` directly rather than `uv run clawd`.
 Saves a few hundred milliseconds at startup and means TTY stdin/stdout
-flow through cleanly to Textual.
+flow through cleanly to Rich.
 
 ## The wrapper
 
