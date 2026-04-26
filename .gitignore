@@ -18,6 +18,9 @@ build/
 *.pem
 *.key
 
+# Sandbox worktrees (created by scripts/clawd-sandbox inside the project dir)
+.clawd-worktrees/
+
 # Editors / OS
 .claude/settings.local.json
 .vscode/
