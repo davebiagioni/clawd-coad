@@ -1,0 +1,48 @@
+import subprocess
+from pathlib import Path
+
+import pytest
+
+
+def _git(*args: str, cwd: Path) -> None:
+    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_git_env(monkeypatch):
+    """pre-commit (and some IDEs) set GIT_DIR / GIT_INDEX_FILE in the
+    environment, which leak into subprocess git calls and break tests that
+    create their own repos. Clear them for every test."""
+    for var in ("GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY"):
+        monkeypatch.delenv(var, raising=False)
+
+
+@pytest.fixture
+def jail(tmp_path: Path) -> Path:
+    """A directory to use as a tool jail root."""
+    j = tmp_path / "jail"
+    j.mkdir()
+    return j
+
+
+@pytest.fixture
+def git_repo(tmp_path: Path) -> Path:
+    """A fresh git repo with one commit and local user.email/name configured."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git("init", "-q", cwd=repo)
+    _git("config", "user.email", "test@test", cwd=repo)
+    _git("config", "user.name", "test", cwd=repo)
+    _git("commit", "-q", "--allow-empty", "-m", "init", cwd=repo)
+    return repo
+
+
+@pytest.fixture
+def empty_git_repo(tmp_path: Path) -> Path:
+    """A git repo with NO commits but user.email/name set."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git("init", "-q", cwd=repo)
+    _git("config", "user.email", "test@test", cwd=repo)
+    _git("config", "user.name", "test", cwd=repo)
+    return repo
