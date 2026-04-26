@@ -19,7 +19,7 @@
 ![Providers](https://img.shields.io/badge/providers-OpenAI--compatible%20%7C%20Anthropic-FF6F61?style=flat-square)
 ![Local-first](https://img.shields.io/badge/local--first-Ollama%20default-25A162?style=flat-square)
 ![Status](https://img.shields.io/badge/status-learning%20project-FFB400?style=flat-square)
-![LOC](https://img.shields.io/badge/code-~600%20LOC-9B59B6?style=flat-square)
+![Size](https://img.shields.io/badge/size-under%201k%20LOC-9B59B6?style=flat-square)
 
 ![clawd in action](demo/demo.gif)
 
@@ -29,7 +29,7 @@
 
 ## what is this
 
-**clawd** is a ~600-line coding agent in the spirit of Claude Code, Aider,
+**clawd** is a tiny coding agent in the spirit of Claude Code, Aider,
 and Cursor — small enough to read in an afternoon, hackable enough to
 actually learn from. Local models out of the box (Ollama default, no API
 bill); swap to OpenAI / Anthropic / OpenRouter / vLLM by editing a

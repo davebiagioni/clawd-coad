@@ -1,6 +1,6 @@
 # Build your own Claude Code
 
-`clawd` is a ~600-line, OSS-friendly clone of the kind of agentic coding CLI
+`clawd` is a tiny, OSS-friendly clone of the kind of agentic coding CLI
 that tools like [Claude Code], [Aider], [Cursor], and [OpenHands] popularized.
 It is small enough to read in an afternoon, and these docs walk through *why*
 each piece exists — not just what the code does.
