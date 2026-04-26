@@ -1,6 +1,7 @@
 import asyncio
 import traceback
 
+import httpx
 from langchain_core.messages import HumanMessage
 from rich.console import Console
 from rich.live import Live
@@ -12,6 +13,15 @@ from .config import settings
 from .pricing import find_pricing, register_pricing
 
 console = Console()
+
+
+def _is_connection_error(exc: BaseException) -> bool:
+    cur: BaseException | None = exc
+    while cur is not None:
+        if isinstance(cur, httpx.ConnectError):
+            return True
+        cur = cur.__cause__
+    return False
 
 
 def _banner(jail_root, branch) -> None:
@@ -224,8 +234,14 @@ async def _main() -> None:
             except KeyboardInterrupt:
                 console.print("\n[red]interrupted[/]")
             except Exception as e:
-                console.print(f"[red]error:[/] {e}")
-                console.print(f"[dim]{traceback.format_exc()}[/]")
+                if _is_connection_error(e):
+                    target = (
+                        settings.base_url if settings.provider == "openai" else "the Anthropic API"
+                    )
+                    console.print(f"[red]couldn't reach {target}[/] — is the model server running?")
+                else:
+                    console.print(f"[red]error:[/] {e}")
+                    console.print(f"[dim]{traceback.format_exc()}[/]")
 
         console.print("[dim]bye[/]")
 
