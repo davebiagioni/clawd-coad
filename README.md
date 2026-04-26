@@ -13,6 +13,7 @@
 
 ### a tiny, hackable, open-source coding agent CLI
 
+[![CI](https://img.shields.io/github/actions/workflow/status/davebiagioni/clawd-coad/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/davebiagioni/clawd-coad/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/langgraph-built--on-1C3A5E?style=flat-square)
 ![Providers](https://img.shields.io/badge/providers-OpenAI--compatible%20%7C%20Anthropic-FF6F61?style=flat-square)
