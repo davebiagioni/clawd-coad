@@ -40,18 +40,19 @@ def make_fs_tools(jail_root: Path) -> list[BaseTool]:
     def edit_file(path: str, old: str, new: str) -> str:
         """Replace the exact string `old` with `new` in the file at `path`.
 
-        Fails if `old` is not present, or if it appears more than once (in which case
-        provide more surrounding context to make the match unique).
+        Returns an error message (instead of raising) if `old` is not present, or
+        if it appears more than once — in which case retry with more surrounding
+        context to make the match unique.
         """
         p = _jail(jail_root, path)
         text = p.read_text()
         count = text.count(old)
         if count == 0:
-            raise ValueError(f"`old` string not found in {p}")
+            return f"error: `old` string not found in {p}"
         if count > 1:
-            raise ValueError(
-                f"`old` string appears {count} times in {p}; "
-                "provide more surrounding context to make it unique"
+            return (
+                f"error: `old` string appears {count} times in {p}; "
+                "retry with more surrounding context to make it unique"
             )
         p.write_text(text.replace(old, new))
         return f"edited {p}"

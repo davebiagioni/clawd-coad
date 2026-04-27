@@ -26,6 +26,17 @@ def _is_connection_error(exc: BaseException) -> bool:
     return False
 
 
+def _api_status_error(exc: BaseException) -> BaseException | None:
+    """Return the first exception in the cause chain that looks like a provider
+    HTTP-status error (openai.APIStatusError, anthropic.APIStatusError, …).
+    Duck-typed on `status_code` so we don't need to import either SDK here."""
+    while exc is not None:
+        if getattr(exc, "status_code", None) is not None:
+            return exc
+        exc = exc.__cause__
+    return None
+
+
 def _banner(jail_root, branch: str) -> None:
     console.print(
         f"\n[bold]clawd[/]  [{t.TOOL}]{settings.provider}[/]  "
@@ -104,6 +115,8 @@ async def _main(thread_id: str) -> None:
                     console.print(
                         f"[{t.ERROR}]couldn't reach {target}[/] — is the model server running?"
                     )
+                elif (api_err := _api_status_error(e)) is not None:
+                    console.print(f"[{t.ERROR}]API error {api_err.status_code}:[/] {api_err}")
                 else:
                     console.print(f"[{t.ERROR}]error:[/] {e}")
                     console.print(f"[{t.DIM}]{traceback.format_exc()}[/]")
