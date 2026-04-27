@@ -1,8 +1,27 @@
 import os
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 WORKTREE_ROOT = Path(os.environ.get("CLAWD_WORKTREE_ROOT", "~/.clawd/worktrees")).expanduser()
+
+
+def new_thread_id() -> str:
+    return datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
+def list_session_ids() -> list[str]:
+    """Existing session ids on disk, most recently modified first."""
+    if not WORKTREE_ROOT.exists():
+        return []
+    dirs = [p for p in WORKTREE_ROOT.iterdir() if p.is_dir()]
+    dirs.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return [p.name for p in dirs]
+
+
+def latest_session_id() -> str | None:
+    ids = list_session_ids()
+    return ids[0] if ids else None
 
 
 def _git(*args: str, cwd: Path | None = None) -> str:

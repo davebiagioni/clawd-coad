@@ -19,6 +19,13 @@ and its branch are not touched.
 Show the unstaged diff of the worktree. Equivalent to
 `git -C <worktree> diff`. Empty output prints `no changes`.
 
+## /sessions
+
+List the saved sessions on disk (one entry per worktree directory in
+`~/.clawd/worktrees/`), most recent first. The current session is marked
+with a `*`. Resume one by quitting and running `clawd -r <id>` (or
+`clawd -c` for the most recent).
+
 ## /cost
 
 Inspect or set Langfuse pricing for the current model.
