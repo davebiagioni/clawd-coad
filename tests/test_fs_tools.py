@@ -40,18 +40,23 @@ def test_edit_unique_match(jail):
     assert (jail / "x.txt").read_text() == "foo BAR baz"
 
 
-def test_edit_non_unique_errors(jail):
+def test_edit_non_unique_returns_error(jail):
     (jail / "x.txt").write_text("foo foo")
     tools = _tools(jail)
-    with pytest.raises(ValueError, match="appears 2 times"):
-        tools["edit_file"].invoke({"path": "x.txt", "old": "foo", "new": "BAR"})
+    out = tools["edit_file"].invoke({"path": "x.txt", "old": "foo", "new": "BAR"})
+    assert out.startswith("error:")
+    assert "appears 2 times" in out
+    # file unchanged
+    assert (jail / "x.txt").read_text() == "foo foo"
 
 
-def test_edit_missing_errors(jail):
+def test_edit_missing_returns_error(jail):
     (jail / "x.txt").write_text("hello")
     tools = _tools(jail)
-    with pytest.raises(ValueError, match="not found"):
-        tools["edit_file"].invoke({"path": "x.txt", "old": "missing", "new": "X"})
+    out = tools["edit_file"].invoke({"path": "x.txt", "old": "missing", "new": "X"})
+    assert out.startswith("error:")
+    assert "not found" in out
+    assert (jail / "x.txt").read_text() == "hello"
 
 
 async def test_glob_finds_files(jail):
