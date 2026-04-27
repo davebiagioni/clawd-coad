@@ -44,6 +44,16 @@ def test_add_usage_computes_cost_with_pricing():
     assert ledger.cost_usd == pytest.approx(6.0)
 
 
+def test_reset_zeroes_counters_but_keeps_pricing():
+    fake = _FakePricing(input_price=1e-6, output_price=2e-6)
+    ledger = SessionLedger(input_tokens=100, output_tokens=50, cost_usd=0.0002, pricing=fake)
+    ledger.reset()
+    assert ledger.input_tokens == 0
+    assert ledger.output_tokens == 0
+    assert ledger.cost_usd == 0.0
+    assert ledger.pricing is fake
+
+
 def test_callback_extracts_usage():
     ledger = SessionLedger()
     cb = LedgerCallback(ledger)

@@ -32,6 +32,7 @@ async def cmd_help(ctx: Context, args: list[str]) -> None:
 async def cmd_clear(ctx: Context, args: list[str]) -> None:
     thread_id = ctx.config["configurable"]["thread_id"]
     await ctx.session.agent.checkpointer.adelete_thread(thread_id)
+    ctx.ledger.reset()
     ctx.console.print(f"[{t.DIM}]conversation cleared[/]")
 
 

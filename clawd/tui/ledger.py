@@ -27,6 +27,11 @@ class SessionLedger:
                 self.pricing.output_price or 0
             )
 
+    def reset(self) -> None:
+        self.input_tokens = 0
+        self.output_tokens = 0
+        self.cost_usd = 0.0
+
     async def refresh_pricing(self, model_name: str) -> None:
         try:
             self.pricing = await pricing_mod.find_pricing(model_name)
