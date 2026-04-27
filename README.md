@@ -90,6 +90,9 @@ uv run --project ~/path/to/clawd-coad clawd
 
 That's it. Type at the prompt, watch it work, review with `/diff`.
 
+For stronger isolation, run the same `clawd` inside a container instead:
+see [run clawd in a sandbox](docs/how-to/run-the-sandbox.md).
+
 ## what a session looks like
 
 ```
@@ -171,7 +174,7 @@ Ten short chapters, ordered to match how the code is laid out:
 small over featureful
 explicit over magical
 provider-neutral over vendor-friendly
-worktree over container
+worktree first, container on demand
 read the code, change the code
 ```
 
