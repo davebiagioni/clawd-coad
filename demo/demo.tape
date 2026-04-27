@@ -3,10 +3,12 @@
 # requires:
 #   - vhs           (https://github.com/charmbracelet/vhs)
 #   - ffmpeg, ttyd  (vhs runtime deps)
-#   - uv            (used to drop pytest into the demo's throwaway venv)
+#   - uv            (used to launch clawd and drop pytest into the demo venv)
 #   - a configured .env at the project root (provider, model, api key)
-#   - clawd on PATH (`uv tool install --editable .`) — or replace
-#     `clawd` below with the full `uv run --project ...` invocation
+#
+# clawd itself is launched via `uv run --project "$CLAWD_REPO" clawd`,
+# so no host-side `uv tool install` is required — the recording is
+# self-contained as long as you run it from the repo root.
 #
 # the recording is fully isolated: it uses a throwaway git repo for
 # cwd, a fresh worktree root, and a fresh sqlite checkpoint, so prior
@@ -61,12 +63,19 @@ Sleep 500ms
 
 # venv + pytest so the agent's `pytest` invocation Just Works. activate
 # before launching clawd so the venv's PATH is inherited by the bash tool.
-Type "uv venv -q && source .venv/bin/activate && uv pip install -q pytest && clear"
+# re-set PS1 — `source .venv/bin/activate` clobbers it with the venv prefix.
+Type "uv venv -q && source .venv/bin/activate && uv pip install -q pytest && PS1='$ ' && clear"
 Enter
 Sleep 2s
 Show
 
 # --- the demo itself ---
+# show the failure on screen first, so the bug-fix request has visible context
+# (and so a smaller hosted model doesn't wander off into unittest-land).
+Type "pytest -q"
+Enter
+Sleep 3s
+
 Type "clawd"
 Enter
 Sleep 3s
@@ -79,9 +88,9 @@ Type "who are you?"
 Enter
 Sleep 10s
 
-Type "the tests are failing. find the bug and fix it."
+Type "pytest is failing on test_subtract. find the bug in calc.py and fix it."
 Enter
-Sleep 30s
+Sleep 45s
 
 Type "/diff"
 Enter
