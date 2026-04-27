@@ -68,7 +68,6 @@ def render_output(text: str) -> Any:
 
 
 def _print_user(console: Console, content: str) -> None:
-    console.print()
     console.print(f"[bold {t.USER}]> {content}[/]")
 
 
