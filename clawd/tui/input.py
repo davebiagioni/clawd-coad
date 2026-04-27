@@ -6,17 +6,23 @@ from pathlib import Path
 from typing import Any
 
 from prompt_toolkit import PromptSession
-from prompt_toolkit.application import get_app
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.document import Document
-from prompt_toolkit.formatted_text import HTML, fragment_list_width, to_formatted_text
+from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.styles import Style
 
 from ..config import Settings
-from . import theme as t
 from .commands import COMMANDS
 from .ledger import SessionLedger
+
+_STYLE = Style.from_dict(
+    {
+        "bottom-toolbar": "fg:#888888 noreverse",
+        "prompt": "fg:ansicyan",
+    }
+)
 
 
 def _history_path() -> Path:
@@ -45,28 +51,12 @@ class _SlashCompleter(Completer):
 
 
 def _make_toolbar(settings: Settings, branch: str, ledger: SessionLedger, has_callbacks: bool):
-    def _toolbar() -> Any:
-        try:
-            width = get_app().output.get_size().columns
-        except Exception:
-            width = 80
-
-        pcolor = "ansigreen" if settings.provider == "openai" else "ansimagenta"
-        left = HTML(f" <{pcolor}>{settings.provider}</{pcolor}>  <b>{settings.model}</b>")
-        parts = [f"<ansiyellow>{t.BRANCH_GLYPH} {branch}</ansiyellow>"]
+    def _toolbar() -> str:
+        parts = [settings.provider, settings.model, branch]
         if has_callbacks:
-            cost = "$—" if ledger.pricing is None else f"${ledger.cost_usd:.4f}"
-            parts.append(f"<ansigreen>{cost}</ansigreen>")
-        parts.append(_format_tokens(ledger.total_tokens))
-        right = HTML("  ·  ".join(parts) + " ")
-
-        pad = max(
-            1,
-            width
-            - fragment_list_width(to_formatted_text(left))
-            - fragment_list_width(to_formatted_text(right)),
-        )
-        return HTML(left.value + " " * pad + right.value)
+            parts.append("$—" if ledger.pricing is None else f"${ledger.cost_usd:.4f}")
+        parts.append(f"{_format_tokens(ledger.total_tokens)} tok")
+        return " · ".join(parts)
 
     return _toolbar
 
@@ -88,11 +78,12 @@ def make_prompt_session(
     history_path.parent.mkdir(parents=True, exist_ok=True)
 
     return PromptSession(
-        message=HTML(f" <ansicyan><b>{t.PROMPT_GLYPH}</b></ansicyan> "),
+        message=HTML("<prompt>&gt; </prompt>"),
         history=FileHistory(str(history_path)),
         completer=_SlashCompleter(),
         complete_while_typing=False,
         bottom_toolbar=_make_toolbar(settings, branch, ledger, has_callbacks),
+        style=_STYLE,
         key_bindings=_key_bindings(),
         multiline=False,
         refresh_interval=0.5,

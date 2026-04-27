@@ -1,90 +1,46 @@
 from rich.syntax import Syntax
 
-from clawd.tui.render import _looks_like_diff, format_tool_call, summarize_output
+from clawd.tui.render import _looks_like_diff, format_tool_call, render_output
 
 
-def test_format_tool_call_read_file():
+def test_format_tool_call_includes_name_and_args():
     out = format_tool_call("read_file", {"path": "clawd/tui.py"})
-    assert "read" in out
+    assert "read_file" in out
     assert "clawd/tui.py" in out
 
 
-def test_format_tool_call_write_file_includes_line_count():
-    out = format_tool_call("write_file", {"path": "x.py", "content": "a\nb\nc\n"})
-    assert "x.py" in out
-    assert "3 lines" in out
-
-
-def test_format_tool_call_edit_file_shows_line_delta():
-    out = format_tool_call("edit_file", {"path": "x.py", "old": "a\nb", "new": "a\nb\nc\nd"})
-    assert "x.py" in out
-    assert "+2 lines" in out
-
-
-def test_format_tool_call_edit_file_no_delta_omits_lines():
-    out = format_tool_call("edit_file", {"path": "x.py", "old": "a\nb", "new": "x\ny"})
-    assert "x.py" in out
-    assert "lines" not in out
-
-
-def test_format_tool_call_bash_truncates_long_command():
-    long = "echo " + "a" * 200
-    out = format_tool_call("bash", {"command": long})
-    assert "shell" in out
-    assert "…" in out
-
-
-def test_format_tool_call_bash_short_command_intact():
-    out = format_tool_call("bash", {"command": "ls -la"})
-    assert "$ ls -la" in out
-
-
-def test_format_tool_call_grep_with_glob():
-    out = format_tool_call("grep", {"pattern": "TODO", "path": "src", "file_glob": "*.py"})
-    assert "TODO" in out
-    assert "src" in out
-    assert "*.py" in out
-
-
-def test_format_tool_call_unknown_tool_falls_back():
+def test_format_tool_call_unknown_tool_renders_args():
     out = format_tool_call("custom_thing", {"foo": "bar"})
     assert "custom_thing" in out
     assert "foo" in out
+    assert "bar" in out
 
 
-def test_summarize_output_empty():
-    out = summarize_output("")
+def test_render_output_empty():
+    out = render_output("")
     assert "(no output)" in out
 
 
-def test_summarize_output_whitespace_only():
-    out = summarize_output("   \n\n  ")
+def test_render_output_whitespace_only():
+    out = render_output("   \n\n  ")
     assert "(no output)" in out
 
 
-def test_summarize_output_short_passes_through():
-    out = summarize_output("ok")
+def test_render_output_short_passes_through():
+    out = render_output("ok")
     assert "ok" in out
 
 
-def test_summarize_output_long_truncates_with_count():
-    text = "\n".join(f"line {i}" for i in range(20))
-    out = summarize_output(text, max_lines=3)
+def test_render_output_long_passes_through_in_full():
+    text = "\n".join(f"line {i}" for i in range(200))
+    out = render_output(text)
     assert "line 0" in out
-    assert "line 19" not in out
-    assert "17 more lines" in out
+    assert "line 199" in out
 
 
-def test_summarize_output_one_extra_line_uses_singular():
-    text = "\n".join(f"line {i}" for i in range(5))
-    out = summarize_output(text, max_lines=4)
-    assert "1 more line" in out
-    assert "1 more lines" not in out
-
-
-def test_summarize_output_diff_returns_syntax():
+def test_render_output_diff_returns_syntax():
     diff = "diff --git a/foo b/foo\n--- a/foo\n+++ b/foo\n@@ -1 +1 @@\n-old\n+new"
-    out = summarize_output(diff)
+    out = render_output(diff)
     assert isinstance(out, Syntax)
 
 

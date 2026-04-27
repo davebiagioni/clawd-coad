@@ -1,6 +1,5 @@
-"""Rich-side rendering: tool-call rows, output summaries, replay, and the streaming turn loop."""
+"""Plain Rich rendering: user messages, raw tool calls, full tool output, streaming."""
 
-from collections.abc import Callable
 from typing import Any
 
 from langchain_core.messages import HumanMessage
@@ -12,45 +11,8 @@ from rich.syntax import Syntax
 from . import theme as t
 
 
-def _summary_edit(a: dict[str, Any]) -> str:
-    path = a.get("path", "")
-    delta = len(a.get("new", "").splitlines()) - len(a.get("old", "").splitlines())
-    if delta == 0:
-        return path
-    return f"{path} · {'+' if delta > 0 else ''}{delta} lines"
-
-
-def _summary_bash(a: dict[str, Any]) -> str:
-    cmd = a.get("command", "")
-    return f"$ {cmd[:77] + '…' if len(cmd) > 80 else cmd}"
-
-
-TOOL_RENDERERS: dict[str, tuple[str, Callable[[dict[str, Any]], str]]] = {
-    "read_file": ("read", lambda a: a.get("path", "")),
-    "write_file": (
-        "write",
-        lambda a: f"{a.get('path', '')} · {len(a.get('content', '').splitlines())} lines",
-    ),
-    "edit_file": ("edit", _summary_edit),
-    "glob_files": ("glob", lambda a: f"{a.get('pattern', '*')} in {a.get('path', '.')}"),
-    "bash": ("shell", _summary_bash),
-    "grep": (
-        "grep",
-        lambda a: (
-            f"{a.get('pattern', '')} in {a.get('path', '.')}"
-            + (f" ({a['file_glob']})" if a.get("file_glob") else "")
-        ),
-    ),
-    "web_fetch": ("fetch", lambda a: a.get("url", "")),
-}
-
-
 def format_tool_call(name: str, args: dict[str, Any]) -> str:
-    head = f"  [{t.TOOL}]{t.TOOL_GLYPH}[/] [{t.TEXT}]"
-    if name in TOOL_RENDERERS:
-        verb, summarize = TOOL_RENDERERS[name]
-        return f"{head}{verb}[/] [{t.ACCENT}]{summarize(args)}[/]"
-    return f"{head}{name}[/] [{t.DIM}]{args}[/]"
+    return f"[{t.TOOL}]→ {name}({args})[/]"
 
 
 def _looks_like_diff(text: str) -> bool:
@@ -58,22 +20,18 @@ def _looks_like_diff(text: str) -> bool:
     return "diff --git" in head or ("--- " in head and "+++ " in head)
 
 
-def summarize_output(text: str, max_lines: int = 4) -> Any:
-    if not text.strip():
-        return f"  [{t.DIM}](no output)[/]"
+def render_output(text: str) -> Any:
+    text = text.rstrip()
+    if not text:
+        return f"[{t.DIM}](no output)[/]"
     if _looks_like_diff(text):
         return Syntax(text, "diff", theme="ansi_dark", background_color="default")
-    lines = text.splitlines()
-    if len(lines) > max_lines:
-        more = len(lines) - max_lines
-        body = "\n".join(lines[:max_lines])
-        return f"  [{t.DIM}]{body}\n  … {more} more line{'' if more == 1 else 's'}[/]"
-    return f"  [{t.DIM}]{text}[/]"
+    return f"[{t.DIM}]{text}[/]"
 
 
 def _print_user(console: Console, content: str) -> None:
     console.print()
-    console.print(f"[{t.USER}]{t.USER_BAR}[/] [bold]{content}[/]")
+    console.print(f"[bold {t.USER}]> {content}[/]")
 
 
 async def replay_history(agent: Any, config: dict[str, Any], console: Console) -> None:
@@ -88,7 +46,7 @@ async def replay_history(agent: Any, config: dict[str, Any], console: Console) -
             for tc in getattr(msg, "tool_calls", []) or []:
                 console.print(format_tool_call(tc["name"], tc.get("args", {})))
         elif msg.type == "tool":
-            console.print(summarize_output(str(msg.content)))
+            console.print(render_output(str(msg.content)))
 
 
 async def run_turn(agent: Any, config: dict[str, Any], prompt: str, console: Console) -> None:
@@ -123,6 +81,6 @@ async def run_turn(agent: Any, config: dict[str, Any], prompt: str, console: Con
             )
         elif kind == "on_tool_end":
             output = event["data"].get("output")
-            console.print(summarize_output(str(getattr(output, "content", output) or "")))
+            console.print(render_output(str(getattr(output, "content", output) or "")))
 
     stop_live()
