@@ -90,24 +90,24 @@ async def run_turn(agent: Any, config: dict[str, Any], prompt: str, console: Con
     _print_user(console, prompt)
     display = _Display(console)
     display.status("thinking")
-
-    async for event in agent.astream_events(
-        {"messages": [HumanMessage(content=prompt)]}, config=config, version="v2"
-    ):
-        kind = event["event"]
-        if kind == "on_chat_model_stream":
-            tok = event["data"]["chunk"].content
-            if isinstance(tok, str) and tok:
-                display.token(tok)
-        elif kind == "on_tool_start":
-            name = event.get("name", "tool")
-            display.stop()
-            console.print(format_tool_call(name, event["data"].get("input", {})))
-            display.status(f"running {name}")
-        elif kind == "on_tool_end":
-            display.stop()
-            output = event["data"].get("output")
-            console.print(render_output(str(getattr(output, "content", output) or "")))
-            display.status("thinking")
-
-    display.stop()
+    try:
+        async for event in agent.astream_events(
+            {"messages": [HumanMessage(content=prompt)]}, config=config, version="v2"
+        ):
+            kind = event["event"]
+            if kind == "on_chat_model_stream":
+                tok = event["data"]["chunk"].content
+                if isinstance(tok, str) and tok:
+                    display.token(tok)
+            elif kind == "on_tool_start":
+                name = event.get("name", "tool")
+                display.stop()
+                console.print(format_tool_call(name, event["data"].get("input", {})))
+                display.status(f"running {name}")
+            elif kind == "on_tool_end":
+                display.stop()
+                output = event["data"].get("output")
+                console.print(render_output(str(getattr(output, "content", output) or "")))
+                display.status("thinking")
+    finally:
+        display.stop()

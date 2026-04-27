@@ -15,7 +15,7 @@
 # clawd sessions don't leak conversation history into the demo.
 #
 # the Sleep after each user turn is sized for a fast hosted model
-# (groq, openai — 3–10s for chat turns, ~30s for the multi-tool bug
+# (groq, openai — 3–10s for chat turns, ~45s for the multi-tool bug
 # hunt). bump them all if you're running a slow local 7B on ollama.
 
 Output demo/demo.gif
@@ -25,7 +25,7 @@ Set FontSize 14
 Set Width    1200
 Set Height   720
 Set Padding  20
-Set Theme    "Catppuccin Mocha"
+Set Theme    { "name": "Clawd", "background": "#0d0d0d", "foreground": "#ece6dc", "cursor": "#d97757", "selection": "#3a2a22", "black": "#1a1a1a", "red": "#e06c4a", "green": "#a3b86c", "yellow": "#e5b769", "blue": "#7aa2c7", "magenta": "#c89bcc", "cyan": "#7ec4b8", "white": "#ece6dc", "brightBlack": "#5c5c5c", "brightRed": "#ff8a5c", "brightGreen": "#c1d684", "brightYellow": "#ffd180", "brightBlue": "#9ec0e0", "brightMagenta": "#dfb4e3", "brightCyan": "#a0dccf", "brightWhite": "#ffffff" }
 Set TypingSpeed 40ms
 
 Hide
@@ -70,31 +70,25 @@ Sleep 2s
 Show
 
 # --- the demo itself ---
-# show the failure on screen first, so the bug-fix request has visible context
-# (and so a smaller hosted model doesn't wander off into unittest-land).
-Type "pytest -q"
-Enter
-Sleep 3s
-
 Type "clawd"
 Enter
 Sleep 3s
 
-Type "hello"
-Enter
-Sleep 6s
-
 Type "who are you?"
 Enter
-Sleep 10s
+Sleep 3s
 
-Type "pytest is failing on test_subtract. find the bug in calc.py and fix it."
+Type "run pytest. any bugs?" 
 Enter
-Sleep 45s
+Sleep 7s
 
-Type "/diff"
+Type "fix the bug and run pytest again"
 Enter
-Sleep 4s
+Sleep 7s
+
+Type "thanks clawd, you're the best"
+Enter
+Sleep 3s
 
 Type "/exit"
 Enter

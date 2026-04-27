@@ -137,7 +137,9 @@ async function streamChat(text, onEvent) {
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-    buf += decoder.decode(value, { stream: true });
+    // Per the SSE spec, events are separated by \r\n\r\n, \n\n, or \r\r.
+    // sse_starlette emits CRLF; normalize so we only have to scan for \n\n.
+    buf = (buf + decoder.decode(value, { stream: true })).replace(/\r\n/g, "\n");
 
     let idx;
     while ((idx = buf.indexOf("\n\n")) !== -1) {

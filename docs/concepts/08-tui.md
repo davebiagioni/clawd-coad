@@ -261,9 +261,11 @@ fall-through Ctrl+C at the prompt. Robust enough for laptop use.
 - **Token-by-token visualization of tool input.** Right now tool calls
   appear all-at-once when complete; for slow models you might want to
   see them stream too.
-- **Web/IDE surfaces.** A terminal is one delivery channel. Same agent
-  could power a `langgraph.serve` HTTP backend with a different
-  frontend; nothing in `agent.py`/`tools/` would change.
+- **Web/IDE surfaces.** A terminal is one delivery channel. The
+  optional `clawd serve` (see [how-to/serve-the-web-frontend.md](
+  ../how-to/serve-the-web-frontend.md)) wires the same agent to a tiny
+  FastAPI/SSE frontend; an IDE plugin would look similar. Nothing in
+  `agent.py` or `tools/` changes.
 
 ## Exercise
 
