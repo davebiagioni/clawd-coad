@@ -62,7 +62,9 @@ async def _main(thread_id: str) -> None:
             )
         await replay_history(session.agent, config, console)
 
-        ps = make_prompt_session(settings, session.branch, ledger, bool(session.callbacks))
+        ps = make_prompt_session(
+            settings, session.branch, ledger, bool(session.callbacks), session.jail_root
+        )
         ctx = Context(session=session, config=config, console=console, ledger=ledger)
 
         while True:
