@@ -68,3 +68,22 @@ async def test_html_converted_to_markdown(monkeypatch):
     assert "Hi" in out
     assert "there" in out
     assert "<h1>" not in out
+
+
+@pytest.mark.asyncio
+async def test_html_strips_script_and_style_content(monkeypatch):
+    # Google's "please enable JS" interstitial is the canonical example: tens of
+    # KB of inline JS in a text/html response. Tag-stripping alone leaks the
+    # script bodies into the model context and burns tokens.
+    html = (
+        b"<html><head><style>body{color:red}</style></head>"
+        b"<body><script>console.log('SECRET_JS')</script>"
+        b"<noscript>NOSCRIPT_TEXT</noscript>"
+        b"<p>visible</p></body></html>"
+    )
+    _patch_httpx(monkeypatch, _FakeResponse([html], content_type="text/html"))
+    out = await web.web_fetch.ainvoke({"url": "http://x"})
+    assert "visible" in out
+    assert "SECRET_JS" not in out
+    assert "color:red" not in out
+    assert "NOSCRIPT_TEXT" not in out

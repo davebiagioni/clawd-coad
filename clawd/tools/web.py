@@ -1,8 +1,19 @@
 import httpx
+from bs4 import BeautifulSoup
 from langchain_core.tools import tool
 from markdownify import markdownify as html_to_md
 
 MAX_BYTES = 5 * 1024 * 1024
+
+
+def _html_to_text(raw: str) -> str:
+    # markdownify's `strip=` only unwraps tags — script/style/noscript *content*
+    # leaks through. Decompose those subtrees first so JS/CSS doesn't end up in
+    # the model's context (e.g. Google's "please enable JS" interstitial).
+    soup = BeautifulSoup(raw, "html.parser")
+    for tag in soup(["script", "style", "noscript"]):
+        tag.decompose()
+    return html_to_md(str(soup))
 
 
 @tool
@@ -32,7 +43,7 @@ async def web_fetch(url: str) -> str:
             total += len(chunk)
 
     raw = b"".join(chunks).decode(encoding, errors="replace")
-    text = html_to_md(raw, strip=["script", "style", "noscript"]) if "html" in content_type else raw
+    text = _html_to_text(raw) if "html" in content_type else raw
 
     if len(text) > 10000:
         return text[:10000] + f"\n\n[truncated; full length {len(text)} chars]"
