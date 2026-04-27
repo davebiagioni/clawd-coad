@@ -152,7 +152,7 @@ and how to swap pieces.
 
 → **[start here: docs/README.md](docs/README.md)**
 
-Nine short chapters, ordered to match how the code is laid out:
+Ten short chapters, ordered to match how the code is laid out:
 
 1. The design space — what coding agents are, how the popular ones differ
 2. The agent loop — `clawd/agent.py`
@@ -163,6 +163,7 @@ Nine short chapters, ordered to match how the code is laid out:
 7. Worktrees & isolation — `clawd/worktree.py`
 8. Observability — `clawd/tracing.py`, `clawd/pricing.py`
 9. The TUI — `clawd/tui.py`
+10. Sandboxing with Docker — `Dockerfile`, `scripts/clawd-sandbox`
 
 ## philosophy
 

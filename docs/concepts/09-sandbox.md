@@ -208,9 +208,10 @@ Compose stack.
 ### `--add-host=host.docker.internal:host-gateway`
 
 `host.docker.internal` resolves natively on Docker Desktop (Mac,
-Windows). On Linux it doesn't, unless you ask for it — which is what
-`--add-host=...:host-gateway` does (Docker 20.10+). One flag, same
-behavior on all three platforms.
+Windows) and Rancher Desktop. On Linux it doesn't, unless you ask
+for it — which is what `--add-host=...:host-gateway` does
+(Docker 20.10+). One flag, same behavior across runtimes and
+platforms.
 
 ## Alternatives we didn't pick
 
