@@ -37,8 +37,7 @@ def _banner(jail_root, branch: str) -> None:
     )
 
 
-async def _main() -> None:
-    thread_id = "default"
+async def _main(thread_id: str) -> None:
     async with make_session(thread_id) as session:
         ledger = SessionLedger()
         await ledger.refresh_pricing(settings.model)
@@ -110,5 +109,5 @@ async def _main() -> None:
         console.print(f"[{t.DIM}]bye[/]")
 
 
-def run() -> None:
-    asyncio.run(_main())
+def run(thread_id: str) -> None:
+    asyncio.run(_main(thread_id))

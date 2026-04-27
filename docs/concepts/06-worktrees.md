@@ -145,8 +145,10 @@ Three cases, in priority order:
 3. **Neither exists** → create both, branched from current HEAD.
 
 Together with LangGraph's checkpointer (which persists the
-*conversation*), this gives a complete resume story: re-run `clawd
---thread-id=foo`, get the same conversation and the same files-on-disk.
+*conversation*), this gives a complete resume story: `clawd -r <id>`
+(or `clawd -c` for the most recent) gets you back the same
+conversation and the same files-on-disk. Run `clawd` with no flags
+and you get a fresh session with a timestamp-shaped id.
 
 ### 3. `worktree prune`
 

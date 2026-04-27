@@ -10,6 +10,7 @@ from rich.syntax import Syntax
 from ..agent import Session
 from ..config import settings
 from ..pricing import find_pricing, register_pricing
+from ..worktree import list_session_ids
 from . import theme as t
 from .ledger import SessionLedger
 
@@ -96,11 +97,28 @@ async def cmd_cost(ctx: Context, args: list[str]) -> None:
     ctx.console.print(f"[{t.ERROR}]usage:[/] /cost  |  /cost set <input_per_1m> <output_per_1m>")
 
 
+async def cmd_sessions(ctx: Context, args: list[str]) -> None:
+    ids = list_session_ids()
+    if not ids:
+        ctx.console.print(f"[{t.DIM}]no sessions yet[/]")
+        return
+    current = ctx.config["configurable"]["thread_id"]
+    for sid in ids:
+        if sid == current:
+            ctx.console.print(f"  [{t.ACCENT}]* {sid}[/]")
+        else:
+            ctx.console.print(f"    {sid}")
+    ctx.console.print(
+        f"[{t.DIM}]resume with `clawd -r <id>` (or `clawd -c` for the most recent)[/]"
+    )
+
+
 COMMANDS: dict[str, tuple[Any, str]] = {
     "/help": (cmd_help, "show this list"),
     "/clear": (cmd_clear, "reset this conversation"),
     "/diff": (cmd_diff, "show git diff of the worktree"),
     "/cost": (cmd_cost, "show or register langfuse pricing for this model"),
+    "/sessions": (cmd_sessions, "list saved sessions"),
 }
 
 EXIT_WORDS: set[str] = {"/exit", "/quit", "/q", "exit", "quit"}
