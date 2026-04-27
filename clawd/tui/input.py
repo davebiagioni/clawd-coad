@@ -96,4 +96,5 @@ def make_prompt_session(
         key_bindings=_key_bindings(),
         multiline=False,
         refresh_interval=0.5,
+        erase_when_done=True,
     )

@@ -72,24 +72,16 @@ def summarize_output(text: str, max_lines: int = 4) -> Any:
 
 
 def _print_user(console: Console, content: str) -> None:
-    console.print(f"[{t.USER}]{t.USER_BAR}[/] [bold]{content}[/]")
     console.print()
-
-
-def _print_divider(console: Console) -> None:
-    console.print(f"\n[{t.DIM}]{t.DIVIDER * 60}[/]\n")
+    console.print(f"[{t.USER}]{t.USER_BAR}[/] [bold]{content}[/]")
 
 
 async def replay_history(agent: Any, config: dict[str, Any], console: Console) -> None:
     state = await agent.aget_state(config)
     messages = state.values.get("messages", []) if state and state.values else []
-    in_turn = False
     for msg in messages:
         if msg.type == "human":
-            if in_turn:
-                _print_divider(console)
             _print_user(console, str(msg.content))
-            in_turn = True
         elif msg.type == "ai":
             if msg.content:
                 console.print(Markdown(msg.content))
@@ -97,8 +89,6 @@ async def replay_history(agent: Any, config: dict[str, Any], console: Console) -
                 console.print(format_tool_call(tc["name"], tc.get("args", {})))
         elif msg.type == "tool":
             console.print(summarize_output(str(msg.content)))
-    if in_turn:
-        _print_divider(console)
 
 
 async def run_turn(agent: Any, config: dict[str, Any], prompt: str, console: Console) -> None:
@@ -136,4 +126,3 @@ async def run_turn(agent: Any, config: dict[str, Any], prompt: str, console: Con
             console.print(summarize_output(str(getattr(output, "content", output) or "")))
 
     stop_live()
-    _print_divider(console)
