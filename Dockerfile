@@ -10,6 +10,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 COPY clawd ./clawd
+COPY README.md ./
 RUN uv sync --frozen --no-dev
 
 WORKDIR /workspace
