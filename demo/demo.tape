@@ -3,10 +3,12 @@
 # requires:
 #   - vhs           (https://github.com/charmbracelet/vhs)
 #   - ffmpeg, ttyd  (vhs runtime deps)
-#   - uv            (used to install pytest into the throwaway demo venv)
-#   - a synced project venv at $CLAWD_REPO/.venv with `clawd` installed
-#     (run `uv sync` in the repo before recording)
+#   - uv            (used to launch clawd and drop pytest into the demo venv)
 #   - a configured .env at the project root (provider, model, api key)
+#
+# clawd itself is launched via `uv run --project "$CLAWD_REPO" clawd`,
+# so no host-side `uv tool install` is required — the recording is
+# self-contained as long as you run it from the repo root.
 #
 # the visible command is just `clawd` — we put $CLAWD_REPO/.venv/bin on
 # PATH in the hidden setup so the recording matches what a local user
@@ -69,9 +71,10 @@ Type "git add . && git -c user.email=demo@x -c user.name=demo commit -q -m init"
 Enter
 Sleep 500ms
 
-# venv + pytest so the agent's `pytest` invocation Just Works,
-# then put clawd's bin on PATH so the visible command is just `clawd`
-Type "uv venv -q && source .venv/bin/activate && uv pip install -q pytest && PS1='$ '"
+# venv + pytest so the agent's `pytest` invocation Just Works. activate
+# before launching clawd so the venv's PATH is inherited by the bash tool.
+# re-set PS1 — `source .venv/bin/activate` clobbers it with the venv prefix.
+Type "uv venv -q && source .venv/bin/activate && uv pip install -q pytest && PS1='$ ' && clear"
 Enter
 Sleep 5s
 Type `export PATH="$CLAWD_REPO/.venv/bin:$PATH"`
@@ -81,6 +84,13 @@ Type "clear"
 Enter
 Sleep 500ms
 Show
+
+# --- the demo itself ---
+# show the failure on screen first, so the bug-fix request has visible context
+# (and so a smaller hosted model doesn't wander off into unittest-land).
+Type "pytest -q"
+Enter
+Sleep 3s
 
 Type "clawd"
 Enter
@@ -94,9 +104,9 @@ Type "who are you?"
 Enter
 Sleep 10s
 
-Type "the test suite is failing. find the bug and fix it."
+Type "pytest is failing on test_subtract. find the bug in calc.py and fix it."
 Enter
-Sleep 30s
+Sleep 45s
 
 Type "/diff"
 Enter
