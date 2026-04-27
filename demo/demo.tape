@@ -10,16 +10,13 @@
 # so no host-side `uv tool install` is required — the recording is
 # self-contained as long as you run it from the repo root.
 #
-# the visible command is just `clawd` — we put $CLAWD_REPO/.venv/bin on
-# PATH in the hidden setup so the recording matches what a local user
-# sees after `uv tool install clawd` (or running from a synced repo).
+# the recording is fully isolated: it uses a throwaway git repo for
+# cwd, a fresh worktree root, and a fresh sqlite checkpoint, so prior
+# clawd sessions don't leak conversation history into the demo.
 #
-# the recording is fully isolated: throwaway git repo for cwd, fresh
-# worktree root, fresh sqlite checkpoint, so prior clawd sessions
-# don't leak conversation history into the demo.
-#
-# Sleep after each user turn is sized for a fast hosted model
-# (groq, openai). bump them all if you're on a slow local 7B.
+# the Sleep after each user turn is sized for a fast hosted model
+# (groq, openai — 3–10s for chat turns, ~30s for the multi-tool bug
+# hunt). bump them all if you're running a slow local 7B on ollama.
 
 Output demo/demo.gif
 
@@ -32,24 +29,17 @@ Set Theme    "Catppuccin Mocha"
 Set TypingSpeed 40ms
 
 Hide
+# clean prompt — strip whatever PROMPT_COMMAND/PS1 .bashrc set up
 Type "unset PROMPT_COMMAND && PS1='$ ' && clear"
 Enter
 Sleep 300ms
 
-Type "export CLAWD_REPO=$PWD"
-Enter
-Sleep 300ms
-
+# load provider config from the project .env (groq / openai / anthropic / …)
 Type "set -a && . ./.env && set +a"
 Enter
 Sleep 300ms
 
-# silence langfuse for the recording — empty values override the .env-loaded
-# keys, so clawd skips the callback handler and the "no pricing" warning.
-Type "export LANGFUSE_PUBLIC_KEY= LANGFUSE_SECRET_KEY="
-Enter
-Sleep 300ms
-
+# isolate this run: fresh worktree + fresh checkpoint db so no replay
 Type "export CLAWD_WORKTREE_ROOT=$(mktemp -d) CLAWD_DB_PATH=$(mktemp -d)/sessions.db"
 Enter
 Sleep 300ms
@@ -76,13 +66,7 @@ Sleep 500ms
 # re-set PS1 — `source .venv/bin/activate` clobbers it with the venv prefix.
 Type "uv venv -q && source .venv/bin/activate && uv pip install -q pytest && PS1='$ ' && clear"
 Enter
-Sleep 5s
-Type `export PATH="$CLAWD_REPO/.venv/bin:$PATH"`
-Enter
-Sleep 300ms
-Type "clear"
-Enter
-Sleep 500ms
+Sleep 2s
 Show
 
 # --- the demo itself ---
@@ -94,7 +78,7 @@ Sleep 3s
 
 Type "clawd"
 Enter
-Sleep 4s
+Sleep 3s
 
 Type "hello"
 Enter
