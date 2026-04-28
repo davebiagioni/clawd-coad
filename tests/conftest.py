@@ -26,6 +26,16 @@ def _isolate_user_skills_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(skills, "USER_SKILLS_DIR", tmp_path / "_user_skills_isolation")
 
 
+@pytest.fixture(autouse=True)
+def _isolate_project_root(tmp_path, monkeypatch):
+    """Point _project_root() at an empty tmp dir so tests don't accidentally
+    pick up <repo>/.clawd/skills/ from the developer's working tree. Tests
+    that need a specific project root override this with their own monkeypatch."""
+    from clawd import skills
+
+    monkeypatch.setattr(skills, "_project_root", lambda: tmp_path / "_project_root_isolation")
+
+
 @pytest.fixture
 def jail(tmp_path: Path) -> Path:
     """A directory to use as a tool jail root."""

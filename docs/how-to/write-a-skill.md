@@ -15,6 +15,11 @@ For the design behind skills, see
 <project>/.clawd/skills/*.md  # this project only (project wins on conflict)
 ```
 
+`<project>` is the directory you launched `clawd` from (or the git
+toplevel if you launched from a subdir). It is **not** the throwaway
+worktree the agent edits in — drop your file in the *real* project
+root and it'll be picked up next session, no commit required.
+
 `*.md` only — no nested directories, no other extensions. Files
 without valid frontmatter are silently skipped.
 

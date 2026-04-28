@@ -1,3 +1,4 @@
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -14,8 +15,27 @@ class Skill:
     path: Path
 
 
-def _project_skills_dir(jail_root: Path) -> Path:
-    return jail_root / ".clawd" / "skills"
+def _project_root() -> Path:
+    """The launch-time project root: git toplevel of cwd, falling back to cwd.
+
+    Skills are tied to the project the user launched clawd from, NOT to the
+    throwaway worktree the agent edits in. A project skill committed to the
+    repo would also be visible inside the worktree, but the common case is
+    "drop a file in `.clawd/skills/` and use it" — which only works if we
+    look at the launch directory.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            return Path(out.stdout.strip())
+    except (FileNotFoundError, OSError):
+        pass
+    return Path.cwd()
 
 
 def _parse(path: Path) -> Skill | None:
@@ -41,14 +61,17 @@ def _parse(path: Path) -> Skill | None:
     )
 
 
-def discover_skills(jail_root: Path) -> dict[str, Skill]:
+def discover_skills() -> dict[str, Skill]:
     """Find all skills available to this session.
 
-    Looks in `~/.clawd/skills/*.md` (user-wide) and `<jail_root>/.clawd/skills/*.md`
-    (project-local). Project skills override user skills with the same name.
+    Looks in `~/.clawd/skills/*.md` (user-wide) and `<project>/.clawd/skills/*.md`
+    where `<project>` is the launch-time project root (git toplevel of cwd, or
+    cwd itself if not in a repo). Project skills override user skills with the
+    same name.
     """
     found: dict[str, Skill] = {}
-    for d in (USER_SKILLS_DIR, _project_skills_dir(jail_root)):
+    project_dir = _project_root() / ".clawd" / "skills"
+    for d in (USER_SKILLS_DIR, project_dir):
         if not d.exists():
             continue
         for p in sorted(d.glob("*.md")):

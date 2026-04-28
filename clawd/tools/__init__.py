@@ -16,7 +16,7 @@ def make_tools(jail_root: Path) -> list[BaseTool]:
         web_fetch,
         make_dispatch_tool(jail_root),
     ]
-    skills_tool = make_skills_tool(jail_root)
+    skills_tool = make_skills_tool()
     if skills_tool is not None:
         tools.append(skills_tool)
     return tools

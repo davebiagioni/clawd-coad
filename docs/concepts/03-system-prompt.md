@@ -135,10 +135,18 @@ Write the failing test first. Run it. Watch it fail. Then implement
 just enough to make it pass. ...
 ```
 
-At session start, `discover_skills(jail_root)` walks two directories:
+At session start, `discover_skills()` walks two directories:
 
 - `~/.clawd/skills/*.md` — skills you carry across projects
-- `<jail_root>/.clawd/skills/*.md` — skills tied to this project
+- `<project>/.clawd/skills/*.md` — skills tied to this project
+
+`<project>` is the launch-time project root: the git toplevel of the
+directory you ran `clawd` from (falling back to that directory itself
+if you're not inside a git repo). Crucially, this is **not** the
+throwaway worktree the agent edits in — a skill committed to your
+repo *would* also appear in the worktree, but the common case is
+"drop a file and use it without committing," and that only works
+when we look at the launch dir.
 
 Project skills win when names collide. Each file's frontmatter
 contributes a one-line entry to the system prompt:

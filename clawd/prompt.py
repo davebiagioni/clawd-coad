@@ -40,7 +40,7 @@ can review your changes with `git -C {jail_root} diff` and merge with \
 def build_system_prompt(jail_root: Path, branch: str) -> str:
     prompt = BASE.format(jail_root=jail_root, branch=branch)
 
-    skills = discover_skills(jail_root)
+    skills = discover_skills()
     if skills:
         lines = ["\n# Skills available", "Call `load_skill(name)` when one applies:"]
         for skill in sorted(skills.values(), key=lambda s: s.name):

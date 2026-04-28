@@ -1,3 +1,4 @@
+from clawd import skills
 from clawd.prompt import build_system_prompt
 
 
@@ -30,7 +31,8 @@ def test_no_skills_section_when_none_installed(tmp_path):
     assert "Skills available" not in p
 
 
-def test_skills_section_lists_name_and_description(tmp_path):
+def test_skills_section_lists_name_and_description(tmp_path, monkeypatch):
+    monkeypatch.setattr(skills, "_project_root", lambda: tmp_path)
     skills_dir = tmp_path / ".clawd/skills"
     skills_dir.mkdir(parents=True)
     (skills_dir / "tdd.md").write_text(
