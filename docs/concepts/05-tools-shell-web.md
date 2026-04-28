@@ -255,6 +255,27 @@ The implementation choices that matter:
   the parent's turn alive — it sees a tool result, not a crash, and
   can decide whether to retry, give up, or try a different approach.
 
+### Verifying it actually ran in parallel
+
+Set `CLAWD_DEBUG_DISPATCH=1` and run a turn that uses two `dispatch`
+calls. Each subagent's start and end gets a wall-clock timestamp on
+stderr:
+
+```
+[dispatch 12:34:56.012] start 'summarize agent.py'
+[dispatch 12:34:56.013] start 'summarize llm.py'
+[dispatch 12:34:58.402] end   'summarize agent.py' (2.39s)
+[dispatch 12:34:58.910] end   'summarize llm.py' (2.90s)
+```
+
+Two `start` lines back-to-back before any `end` line is the proof:
+both subagents are mid-flight at the same moment. If they were
+serial, you'd see `start a` → `end a` → `start b` → `end b` instead.
+The total wall time is `max(t_a, t_b)` rather than `t_a + t_b`.
+
+Redirect stderr to a file (`uv run clawd 2>dispatch.log`) if the
+TUI's full-screen rendering eats the prints.
+
 What's *not* here:
 
 - **No tool subset per call.** `dispatch(task, tools=["read_file"])`

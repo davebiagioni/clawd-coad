@@ -122,6 +122,52 @@ def test_dispatch_is_registered_with_main_tools(jail, registered):
     assert ("dispatch" in names) is registered
 
 
+def test_debug_off_by_default_is_silent(jail, monkeypatch, capsys):
+    _patch_agent(monkeypatch, reply="ok")
+    monkeypatch.delenv("CLAWD_DEBUG_DISPATCH", raising=False)
+    tool = make_dispatch_tool(jail)
+
+    asyncio.run(tool.ainvoke({"task": "noop"}))
+
+    err = capsys.readouterr().err
+    assert "[dispatch" not in err
+
+
+def test_debug_on_logs_start_and_end_to_stderr(jail, monkeypatch, capsys):
+    _patch_agent(monkeypatch, reply="ok")
+    monkeypatch.setenv("CLAWD_DEBUG_DISPATCH", "1")
+    tool = make_dispatch_tool(jail)
+
+    asyncio.run(tool.ainvoke({"task": "summarize agent.py"}))
+
+    err = capsys.readouterr().err
+    assert "[dispatch" in err
+    assert "start" in err
+    assert "end" in err
+    assert "summarize agent.py" in err
+
+
+def test_debug_on_logs_error_when_subagent_crashes(jail, monkeypatch, capsys):
+    monkeypatch.setenv("CLAWD_DEBUG_DISPATCH", "1")
+
+    class _CrashingAgent:
+        def __init__(self, *_, **__):
+            pass
+
+        async def ainvoke(self, _payload):
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr(dispatch_module, "create_react_agent", lambda *a, **kw: _CrashingAgent())
+    monkeypatch.setattr(dispatch_module, "make_llm", lambda: object())
+
+    tool = make_dispatch_tool(jail)
+    asyncio.run(tool.ainvoke({"task": "noop"}))
+
+    err = capsys.readouterr().err
+    assert "error" in err
+    assert "noop" in err
+
+
 def test_subagent_failure_returns_string_not_exception(jail, monkeypatch):
     """A subagent crash (provider rejecting a malformed tool call, etc.) must
     not propagate out of `dispatch` and kill the parent's turn — return a

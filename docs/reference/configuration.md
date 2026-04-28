@@ -54,6 +54,15 @@ defaults below.
   created on first run. Delete the file to wipe all sessions.
 - **Example:** `CLAWD_DB_PATH=/tmp/clawd-test.db`
 
+## CLAWD_DEBUG_DISPATCH
+
+- **Default:** unset
+- **Description:** When set to `1`, the `dispatch` tool logs each
+  subagent's start, end, and duration to stderr with millisecond
+  timestamps. Useful for confirming that two `dispatch` calls in the
+  same turn actually overlap. See chapter 5 for an example.
+- **Example:** `CLAWD_DEBUG_DISPATCH=1 uv run clawd 2>dispatch.log`
+
 ## LANGFUSE_PUBLIC_KEY
 
 - **Default:** unset
