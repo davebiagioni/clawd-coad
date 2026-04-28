@@ -17,6 +17,15 @@ def _isolate_git_env(monkeypatch):
         monkeypatch.delenv(var, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_user_skills_dir(tmp_path, monkeypatch):
+    """Point USER_SKILLS_DIR at an empty tmp dir so tests don't see the
+    developer's real ~/.clawd/skills/."""
+    from clawd import skills
+
+    monkeypatch.setattr(skills, "USER_SKILLS_DIR", tmp_path / "_user_skills_isolation")
+
+
 @pytest.fixture
 def jail(tmp_path: Path) -> Path:
     """A directory to use as a tool jail root."""

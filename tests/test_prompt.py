@@ -23,3 +23,23 @@ def test_appends_claude_md_when_present(tmp_path):
     p = build_system_prompt(tmp_path, "clawd/test")
     assert "Project context" in p
     assert "Use tabs not spaces." in p
+
+
+def test_no_skills_section_when_none_installed(tmp_path):
+    p = build_system_prompt(tmp_path, "clawd/test")
+    assert "Skills available" not in p
+
+
+def test_skills_section_lists_name_and_description(tmp_path):
+    skills_dir = tmp_path / ".clawd/skills"
+    skills_dir.mkdir(parents=True)
+    (skills_dir / "tdd.md").write_text(
+        "---\nname: tdd\ndescription: Use when writing features\n---\nbody"
+    )
+
+    p = build_system_prompt(tmp_path, "clawd/test")
+
+    assert "Skills available" in p
+    assert "load_skill" in p
+    assert "tdd" in p
+    assert "Use when writing features" in p
