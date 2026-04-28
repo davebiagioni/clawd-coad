@@ -32,7 +32,8 @@ chapter stands alone.
 2. [The agent loop](concepts/01-agent-loop.md) — `clawd/agent.py`
 3. [Talking to a model](concepts/02-talking-to-a-model.md) — `clawd/llm.py`,
    `clawd/config.py`
-4. [The system prompt](concepts/03-system-prompt.md) — `clawd/prompt.py`
+4. [The system prompt](concepts/03-system-prompt.md) — `clawd/prompt.py`,
+   `clawd/skills.py`
 5. [Tools, part 1: filesystem](concepts/04-tools-filesystem.md) —
    `clawd/tools/fs.py`
 6. [Tools, part 2: shell, web, subagents](concepts/05-tools-shell-web.md) —
@@ -51,6 +52,8 @@ Recipe-form guides for specific tasks. Read these when you have a
 particular thing you're trying to do.
 
 - [Add a new tool](how-to/add-a-tool.md) — give the agent a new capability.
+- [Write a skill](how-to/write-a-skill.md) — give the agent on-demand
+  instructions for specific tasks (TDD, release checklists, etc.).
 - [Run clawd in a sandbox](how-to/run-the-sandbox.md) — run the same
   binary inside a container, with only your project visible.
 - [Verify the sandbox actually isolates](how-to/verify-the-sandbox.md) —

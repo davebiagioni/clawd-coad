@@ -1,6 +1,7 @@
 # Chapter 3: The system prompt
 
-> **Code for this chapter:** `clawd/prompt.py` (37 lines)
+> **Code for this chapter:** `clawd/prompt.py` (54 lines),
+> `clawd/skills.py` (58 lines), `clawd/tools/skills.py` (30 lines)
 
 The system prompt is the model's job description. Every turn of the agent
 loop, the model re-reads it (whether it likes it or not — the prompt sits
@@ -114,6 +115,78 @@ the *name* is Anthropic-flavored. Two reasons we kept the name:
 
 A reasonable variant: support multiple filenames with a precedence order
 (`AGENTS.md` → `CLAUDE.md` → `CONVENTIONS.md`). Two extra lines of code.
+
+## Skills: on-demand instruction bundles
+
+`CLAUDE.md` solves "things every turn should know about this project."
+Skills solve a different problem: "things only *some* turns need to
+know, and they're long."
+
+A skill is a markdown file with yaml frontmatter:
+
+```markdown
+---
+name: tdd
+description: Use when adding a new feature, before writing implementation code.
+---
+# Test-Driven Development
+
+Write the failing test first. Run it. Watch it fail. Then implement
+just enough to make it pass. ...
+```
+
+At session start, `discover_skills()` walks two directories:
+
+- `~/.clawd/skills/*.md` — skills you carry across projects
+- `<project>/.clawd/skills/*.md` — skills tied to this project
+
+`<project>` is the launch-time project root: the git toplevel of the
+directory you ran `clawd` from (falling back to that directory itself
+if you're not inside a git repo). Crucially, this is **not** the
+throwaway worktree the agent edits in — a skill committed to your
+repo *would* also appear in the worktree, but the common case is
+"drop a file and use it without committing," and that only works
+when we look at the launch dir.
+
+Project skills win when names collide. Each file's frontmatter
+contributes a one-line entry to the system prompt:
+
+```
+# Skills available
+Call `load_skill(name)` when one applies:
+- `tdd`: Use when adding a new feature, before writing implementation code.
+- `release-checklist`: Use before tagging a release.
+```
+
+The bodies are *not* injected. The model sees only the names and
+descriptions and decides when to call `load_skill(name)`, which is a
+tool that returns the full body.
+
+This is a deliberate split:
+
+- **Descriptions go in the prompt.** They have to, otherwise the model
+  doesn't know what's available. They're short by design — one
+  sentence, focused on *when* to use the skill.
+- **Bodies stay on disk until needed.** A 1000-word "how to do TDD"
+  doc would burn 1.5k tokens on every turn if it lived in the prompt.
+  Loading it on demand pays the cost only when relevant.
+
+This is the same pattern Claude Code uses for its skills system; we
+copied the shape because it works. The format is a strict subset (no
+nested directories, no globbed file references, no platform-specific
+tool name remapping) — enough for the common case, not enough to
+re-implement the full spec.
+
+When *not* to use skills:
+
+- "Always do X" — that's a `CLAUDE.md` line, not a skill.
+- "Reference docs the model can grep" — that's a file in the repo, not
+  a skill.
+- "Override default behavior" — better as a `CLAWD_*` env var; skills
+  are advice, not configuration.
+
+The recipe for writing one is at
+[how-to/write-a-skill](../how-to/write-a-skill.md).
 
 ## Why so short?
 
