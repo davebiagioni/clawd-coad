@@ -35,8 +35,8 @@ chapter stands alone.
 4. [The system prompt](concepts/03-system-prompt.md) — `clawd/prompt.py`
 5. [Tools, part 1: filesystem](concepts/04-tools-filesystem.md) —
    `clawd/tools/fs.py`
-6. [Tools, part 2: shell & web](concepts/05-tools-shell-web.md) —
-   `clawd/tools/shell.py`, `clawd/tools/web.py`
+6. [Tools, part 2: shell, web, subagents](concepts/05-tools-shell-web.md) —
+   `clawd/tools/shell.py`, `clawd/tools/web.py`, `clawd/tools/dispatch.py`
 7. [Worktrees & isolation](concepts/06-worktrees.md) —
    `clawd/worktree.py`
 8. [Observability](concepts/07-observability.md) — `clawd/tracing.py`,

@@ -118,7 +118,7 @@ diff --git a/clawd/agent.py b/clawd/agent.py
 |---|---|
 | **agent loop**       | LangGraph `create_react_agent`, SQLite checkpointing, conversation resume |
 | **provider-neutral** | any OpenAI-compatible endpoint (Ollama / vLLM / OpenRouter / Together / Groq / OpenAI) **plus** direct Anthropic API |
-| **tools**            | `read_file`, `write_file`, `edit_file`, `glob_files`, `grep`, `bash`, `web_fetch` |
+| **tools**            | `read_file`, `write_file`, `edit_file`, `glob_files`, `grep`, `bash`, `web_fetch`, `dispatch` (parallel subagents) |
 | **isolation**        | git worktree per session — agent edits land on a throwaway branch you `git diff` and `git merge` |
 | **observability**    | optional [Langfuse](https://langfuse.com) tracing with cost-in-dollars and per-run tags |
 | **TUI**              | streaming markdown via [Rich](https://rich.readthedocs.io), slash commands (`/help` `/clear` `/diff` `/cost`) |

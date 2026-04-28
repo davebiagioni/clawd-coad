@@ -1,12 +1,14 @@
-# Chapter 5: Tools, part 2 — shell & web
+# Chapter 5: Tools, part 2 — shell, web, and subagents
 
 > **Code for this chapter:** `clawd/tools/shell.py` (69 lines),
-> `clawd/tools/web.py` (41 lines)
+> `clawd/tools/web.py` (41 lines),
+> `clawd/tools/dispatch.py` (~50 lines)
 
 The filesystem tools from [chapter 4](04-tools-filesystem.md) cover
 *editing* the codebase. Shell and web cover the other things a coding
 agent needs to *do*: run tests, run the program, search the web,
-look up an API.
+look up an API. `dispatch` is a different shape of tool — it lets the
+agent fan out parallel work to a subagent.
 
 ## `bash`: the everything tool
 
@@ -200,6 +202,73 @@ What's *not* here:
 - **No auth.** Public URLs only. Adding API-key support per-host is a
   reasonable extension.
 
+## `dispatch`: subagents for fan-out
+
+```python
+@tool
+async def dispatch(task: str) -> str:
+    """Run a focused task in an isolated subagent and return its final answer."""
+    agent = create_react_agent(
+        make_llm(),
+        tools=sub_tools,
+        prompt=SUBAGENT_PROMPT.format(jail_root=jail_root),
+    )
+    result = await agent.ainvoke({"messages": [("user", task)]})
+    return result["messages"][-1].content
+```
+
+`dispatch` is the odd one out in this chapter. It doesn't read a file or
+hit the network — it spawns *another agent* to do a focused subtask.
+Why is that a tool?
+
+Because the model already knows how to use tools. Once you frame "run a
+focused task" as a tool call, the model can fan out: it issues several
+`dispatch` calls in one turn, LangGraph runs them concurrently via
+`asyncio`, and the parent gets back N final answers it can synthesize.
+No new control flow, no new framework primitive — just one more tool.
+
+The implementation choices that matter:
+
+- **Same llm, same jail.** A subagent is the parent shrunk down. It
+  calls `make_llm()` again (cheap — just a new `BaseChatModel`) and
+  reuses the parent's `jail_root`. Edits a subagent makes land in the
+  same worktree the parent is editing. This is the point: parallel
+  *work*, not parallel *sandboxes*.
+- **No `dispatch` in the subagent's tools.** The subagent has fs,
+  shell, and web — but no `dispatch` of its own. Recursion is excluded
+  by construction so a misfiring subagent can't spawn a tree of agents
+  burning tokens. If you want hierarchical agents, lift the cap and
+  add a depth counter; we chose simple over flexible.
+- **No checkpointer.** Only the parent session is persisted. A
+  subagent is one-shot: it runs to a final answer, returns it, and
+  disappears. Its intermediate steps don't survive.
+- **Stripped system prompt.** The subagent's prompt is short ("you are
+  a subagent of clawd, return a final answer") rather than the full
+  parent prompt with CLAUDE.md context. Subagents are focused, so they
+  shouldn't need to know everything the parent knows. This also keeps
+  their context small, which is half the point of dispatching.
+
+What's *not* here:
+
+- **No tool subset per call.** `dispatch(task, tools=["read_file"])`
+  would be a natural extension — let the parent give a subagent
+  read-only powers when fanning out exploration. We left this out for
+  now; the YAGNI version is "all tools or nothing."
+- **No result-shape contract.** The subagent returns whatever its
+  final assistant message is. A stricter version would force JSON
+  output, but we chose to trust the model.
+- **No timeout.** A wedged subagent runs as long as the LLM lets it.
+  Worth adding if you put this in production.
+
+When this is worth using: read-heavy fan-out where the parent would
+otherwise serialize ("read agent.py *then* read llm.py *then*..."). The
+parent issues two `dispatch` calls in one turn, both run concurrently,
+and the round-trip is one model call instead of two.
+
+When it's *not* worth using: any task where subagents would step on
+each other's edits, or where the parent could just call the underlying
+tool itself. `dispatch` is fan-out, not delegation.
+
 ## What's missing from this chapter
 
 - **Streaming output for long-running commands.** Test suites that take
@@ -210,6 +279,9 @@ What's *not* here:
 - **Cost accounting.** A `bash` call that returns 10MB of test output
   is a context disaster. Capping it (truncate stdout/stderr to 50k
   chars) is a reasonable next step.
+- **Per-call tool subsets for `dispatch`.** Today the subagent always
+  inherits the full toolset; a `dispatch(task, tools=[...])` argument
+  would let the parent narrow the surface for safety or focus.
 
 ## Exercise
 
