@@ -121,6 +121,7 @@ diff --git a/clawd/agent.py b/clawd/agent.py
 | **tools**            | `read_file`, `write_file`, `edit_file`, `glob_files`, `grep`, `bash`, `web_fetch`, `dispatch` (parallel subagents) |
 | **isolation**        | git worktree per session — agent edits land on a throwaway branch you `git diff` and `git merge` |
 | **observability**    | optional [Langfuse](https://langfuse.com) tracing with cost-in-dollars and per-run tags |
+| **skills**           | drop a markdown file into `~/.clawd/skills/` or `<project>/.clawd/skills/`; the agent loads it on demand — see [write a skill](docs/how-to/write-a-skill.md) |
 | **TUI**              | streaming markdown via [Rich](https://rich.readthedocs.io), slash commands (`/help` `/clear` `/diff` `/cost`) |
 | **web ui (optional)**| `clawd serve` — same agent over SSE, with sanitized markdown + KaTeX math; see [serve the web frontend](docs/how-to/serve-the-web-frontend.md) |
 

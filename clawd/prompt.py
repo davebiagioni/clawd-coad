@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from .skills import discover_skills
+
 BASE = """\
 You are clawd, an open-source AI coding assistant. You help with software \
 engineering tasks: reading code, making edits, running shell commands, \
@@ -37,6 +39,13 @@ can review your changes with `git -C {jail_root} diff` and merge with \
 
 def build_system_prompt(jail_root: Path, branch: str) -> str:
     prompt = BASE.format(jail_root=jail_root, branch=branch)
+
+    skills = discover_skills()
+    if skills:
+        lines = ["\n# Skills available", "Call `load_skill(name)` when one applies:"]
+        for skill in sorted(skills.values(), key=lambda s: s.name):
+            lines.append(f"- `{skill.name}`: {skill.description}")
+        prompt += "\n".join(lines) + "\n"
 
     claude_md = jail_root / "CLAUDE.md"
     if claude_md.exists():
