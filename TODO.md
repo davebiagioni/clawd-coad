@@ -56,6 +56,14 @@ human-side counterpart to PR #20: let the user inspect and trigger skills from t
 - handlers go in `clawd/tui/app.py` next to the existing `/help`, `/clear`, `/diff`, `/cost` slash commands; reference doc is `docs/reference/slash-commands.md`
 - size: ~30 lines + a test
 
+## sandbox: zero-config defaults
+
+today `scripts/clawd-sandbox` only rewrites `localhost` → `host.docker.internal` for URLs that already appear in a `.env` file. if you have no `.env` and rely on the baked-in default (`CLAWD_BASE_URL=http://localhost:11434/v1`), the container can't reach host-side ollama and you get "couldn't reach http://localhost:11434/v1" on the first prompt.
+
+- in `scripts/clawd-sandbox`: when no `.env` exists, inject `-e CLAWD_BASE_URL=http://host.docker.internal:11434/v1` (and matching defaults for `CLAWD_MODEL`, `CLAWD_API_KEY`) so the out-of-the-box experience just works
+- update `docs/how-to/run-the-sandbox.md` step 1: "you only need a `.env` if you're using a non-default provider"
+- size: ~10 lines of bash + a doc edit
+
 ## local tracing of llm completions + tool use
 
 no-cloud alternative to langfuse — same shape, file-backed.
