@@ -120,3 +120,28 @@ def test_dispatch_is_registered_with_main_tools(jail, registered):
 
     names = {t.name for t in make_tools(jail)}
     assert ("dispatch" in names) is registered
+
+
+def test_subagent_failure_returns_string_not_exception(jail, monkeypatch):
+    """A subagent crash (provider rejecting a malformed tool call, etc.) must
+    not propagate out of `dispatch` and kill the parent's turn — return a
+    descriptive string instead, so the parent sees it as a tool result."""
+
+    class _CrashingAgent:
+        def __init__(self, *_, **__):
+            pass
+
+        async def ainvoke(self, _payload):
+            raise RuntimeError("groq said: failed to call a function")
+
+    monkeypatch.setattr(dispatch_module, "create_react_agent", lambda *a, **kw: _CrashingAgent())
+    monkeypatch.setattr(dispatch_module, "make_llm", lambda: object())
+
+    tool = make_dispatch_tool(jail)
+
+    result = asyncio.run(tool.ainvoke({"task": "anything"}))
+
+    assert isinstance(result, str)
+    assert "subagent failed" in result
+    assert "RuntimeError" in result
+    assert "failed to call a function" in result

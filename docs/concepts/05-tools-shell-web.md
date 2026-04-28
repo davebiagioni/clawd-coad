@@ -247,6 +247,13 @@ The implementation choices that matter:
   parent prompt with CLAUDE.md context. Subagents are focused, so they
   shouldn't need to know everything the parent knows. This also keeps
   their context small, which is half the point of dispatching.
+- **Subagent crashes return as tool errors.** Provider APIs reject
+  malformed tool calls (Groq's "Failed to call a function" is the
+  common one with smaller open-weights models). If `agent.ainvoke`
+  raises, `dispatch` catches it and returns
+  `subagent failed: <ExcType>: <message>` to the parent. This keeps
+  the parent's turn alive — it sees a tool result, not a crash, and
+  can decide whether to retry, give up, or try a different approach.
 
 What's *not* here:
 

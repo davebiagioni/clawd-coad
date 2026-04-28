@@ -45,7 +45,13 @@ def make_dispatch_tool(jail_root: Path) -> BaseTool:
             tools=sub_tools,
             prompt=SUBAGENT_PROMPT.format(jail_root=jail_root),
         )
-        result = await agent.ainvoke({"messages": [("user", task)]})
+        try:
+            result = await agent.ainvoke({"messages": [("user", task)]})
+        except Exception as e:
+            # A subagent crash (malformed tool call rejected by the provider, network
+            # blip, etc.) must surface to the parent as a tool result, not propagate
+            # up and kill the parent's turn.
+            return f"subagent failed: {type(e).__name__}: {e}"
         return result["messages"][-1].content
 
     return dispatch
