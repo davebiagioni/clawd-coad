@@ -18,6 +18,10 @@ can review your changes with `git -C {jail_root} diff` and merge with \
   surrounding context to make the match unique.
 - Use `glob_files` to discover files by pattern; `grep` to search content.
 - `bash` runs with the worktree as its working directory.
+- `dispatch` runs a focused task in a subagent and returns its final answer.
+  Issue several `dispatch` calls in one turn to fan out independent work — they
+  run concurrently. Best for read-heavy exploration ("search X across subsystem
+  A while reading file B"), not for work that needs shared state.
 
 # Output style
 - Be terse. Aim for the shortest response that fully answers. One or two
