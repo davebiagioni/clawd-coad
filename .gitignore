@@ -21,6 +21,9 @@ build/
 # Sandbox worktrees (created by scripts/clawd-sandbox inside the project dir)
 .clawd-worktrees/
 
+# Dev worktrees (created for parallel feature work)
+.worktrees/
+
 # Editors / OS
 .claude/settings.local.json
 .vscode/
