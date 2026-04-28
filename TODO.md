@@ -46,6 +46,16 @@ let the user run a shell command directly from the prompt without going through 
 - mirrors claude code's `!` and shells like `:!cmd` — familiar muscle memory
 - size: ~20–40 lines, mostly UI
 
+## slash commands for skills
+
+human-side counterpart to PR #20: let the user inspect and trigger skills from the TUI without going through the model.
+
+- `/skills` — list discovered skills with their descriptions (re-runs `discover_skills()`, formats the same way as the system-prompt block)
+- `/skill <name>` — print the body inline, same panel style as a tool result
+- open question: `/skills reload` for picking up newly-dropped files mid-session, or just say "restart"
+- handlers go in `clawd/tui/app.py` next to the existing `/help`, `/clear`, `/diff`, `/cost` slash commands; reference doc is `docs/reference/slash-commands.md`
+- size: ~30 lines + a test
+
 ## local tracing of llm completions + tool use
 
 no-cloud alternative to langfuse — same shape, file-backed.
