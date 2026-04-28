@@ -35,6 +35,17 @@ audit, not feature work. the goal is a checked claim, not new code.
 - optional: `tests/test_sandbox.py` that skips unless `docker` is on PATH
 - size: docs-heavy, near-zero code
 
+## `!` shell prefix in the TUI
+
+let the user run a shell command directly from the prompt without going through the model.
+
+- detect a `!` prefix on submitted input in `clawd/tui/app.py` (or wherever input is handled)
+- if present, run the rest of the line via the existing `bash` tool / a thin wrapper so the worktree jail still applies
+- render output inline in the same panel style as a model-driven `bash` call
+- no LLM roundtrip; nothing is appended to the conversation history (or — open question — append as a synthetic user message so the model sees the result on the next turn?)
+- mirrors claude code's `!` and shells like `:!cmd` — familiar muscle memory
+- size: ~20–40 lines, mostly UI
+
 ## local tracing of llm completions + tool use
 
 no-cloud alternative to langfuse — same shape, file-backed.
