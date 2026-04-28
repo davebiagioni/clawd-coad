@@ -53,6 +53,9 @@ particular thing you're trying to do.
 - [Add a new tool](how-to/add-a-tool.md) — give the agent a new capability.
 - [Run clawd in a sandbox](how-to/run-the-sandbox.md) — run the same
   binary inside a container, with only your project visible.
+- [Verify the sandbox actually isolates](how-to/verify-the-sandbox.md) —
+  probes you can run after building the image to confirm host files,
+  secrets, and network are out of reach.
 - [Serve the web frontend](how-to/serve-the-web-frontend.md) — the
   optional `clawd serve` HTTP/SSE surface, with KaTeX math rendering.
 

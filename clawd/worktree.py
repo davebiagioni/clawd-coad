@@ -48,6 +48,15 @@ def ensure_worktree(thread_id: str) -> tuple[Path, str]:
     try:
         _git("rev-parse", "--git-dir")
     except RuntimeError as e:
+        if "dubious ownership" in str(e):
+            raise RuntimeError(
+                "git refuses to operate on this repo because its on-disk owner doesn't "
+                "match the current user. This usually means you're running clawd inside "
+                "a container against a host-mounted repo. Add the path to git's safe list:\n"
+                "    git config --global --add safe.directory <path>\n"
+                "or rebuild the container image (the Dockerfile already does this for "
+                "/workspace; if you've changed the mount point, update it there)."
+            ) from e
         raise RuntimeError(
             "clawd requires a git repository. cd into one or run `git init` first."
         ) from e

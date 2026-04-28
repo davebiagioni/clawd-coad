@@ -65,6 +65,28 @@ def test_errors_outside_git_repo(tmp_path, monkeypatch):
         ensure_worktree("test")
 
 
+def test_dubious_ownership_message_surfaces_safe_directory(monkeypatch, tmp_path):
+    """When git refuses with 'dubious ownership', the user-facing error must
+    explain the cause and point at `git config safe.directory` — not the
+    misleading 'cd into a git repo' message. This is the bug the docker
+    sandbox hit when bind-mounting a host repo into a root-owned container."""
+    import clawd.worktree as wt
+
+    def fake_git(*args, cwd=None):
+        if args == ("rev-parse", "--git-dir"):
+            raise RuntimeError(
+                "git rev-parse --git-dir failed: fatal: detected dubious "
+                "ownership in repository at '/workspace'"
+            )
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(wt, "_git", fake_git)
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(RuntimeError, match="safe.directory"):
+        ensure_worktree("test")
+
+
 def test_new_thread_id_is_timestamp_shaped():
     assert re.fullmatch(r"\d{8}-\d{6}", new_thread_id())
 

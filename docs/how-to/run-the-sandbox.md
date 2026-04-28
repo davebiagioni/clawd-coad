@@ -95,6 +95,10 @@ target project's `.gitignore` too if you want it hidden from `git status`.
 - **`OSError: Readme file does not exist: README.md` during build.** Stale
   Dockerfile from before [PR #8](https://github.com/davebiagioni/clawd-coad/pull/8).
   `git pull` and rerun.
+- **`fatal: detected dubious ownership in repository at '/workspace'`.**
+  Stale image. Rebuild with `--build` (or `docker build --no-cache -t
+  clawd:latest /path/to/clawd-coad`) — the current `Dockerfile` whitelists
+  `/workspace` via `git config safe.directory`.
 
 ## Related
 
