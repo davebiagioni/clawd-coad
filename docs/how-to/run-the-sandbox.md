@@ -20,7 +20,10 @@ it's a separate UX rather than the default — see
 
 ## Steps
 
-### 1. Configure `.env` in the target project
+### 1. (Optional) configure `.env` in the target project
+
+If you're using a non-default provider (OpenAI, Anthropic, OpenRouter,
+etc.), drop a `.env` in your target project:
 
 ```bash
 cd ~/your-project
@@ -30,14 +33,13 @@ $EDITOR .env
 
 The `.env` lives in your **target project**, not in the clawd repo —
 that's the directory the wrapper reads from. The wrapper rewrites
-`localhost` and `127.0.0.1` inside `.env` to `host.docker.internal`
-so a host-side Ollama / vLLM / Langfuse remains reachable from inside
-the container.
+`localhost` and `127.0.0.1` inside `.env` to `host.docker.internal` so
+a host-side Ollama / vLLM / Langfuse stays reachable from inside the
+container.
 
-Drop a `.env` even if you're using the Ollama default. The baked-in
-default `CLAWD_BASE_URL=http://localhost:11434/v1` (in `clawd/config.py`)
-goes straight into the container otherwise, where `localhost` means the
-container itself.
+If you're sticking with the default (Ollama at `localhost:11434`), no
+`.env` is needed — the wrapper injects
+`CLAWD_BASE_URL=http://host.docker.internal:11434/v1` automatically.
 
 ### 2. Run the wrapper from the target project
 
@@ -90,8 +92,10 @@ target project's `.gitignore` too if you want it hidden from `git status`.
   service binds to loopback only. Ollama on Linux defaults to this; set
   `OLLAMA_HOST=0.0.0.0` and restart it. Same fix for any other host-side
   service the wrapper rewrites.
-- **Container can't reach Ollama and there's no `.env`.** See step 1 —
-  even with defaults, the wrapper only rewrites `localhost` inside `.env`.
+- **`couldn't reach http://localhost:11434/v1` and no `.env`.** Stale
+  wrapper script that doesn't inject the host.docker.internal default.
+  `git pull` in the clawd repo. Or, as a workaround, drop a `.env` in
+  your project with `CLAWD_BASE_URL=http://host.docker.internal:11434/v1`.
 - **`OSError: Readme file does not exist: README.md` during build.** Stale
   Dockerfile from before [PR #8](https://github.com/davebiagioni/clawd-coad/pull/8).
   `git pull` and rerun.

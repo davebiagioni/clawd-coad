@@ -99,9 +99,12 @@ container disappears. The bind-mounted files persist (that's the point).
 - **`the input device is not a TTY`.** The wrapper uses `docker run -it`,
   which needs a real terminal. Run it from your interactive shell, not
   through a pipe or non-TTY runner.
-- **Container starts but can't reach Ollama / vLLM.** See step 1 of
-  [run clawd in a sandbox](run-the-sandbox.md) — `.env` rewriting only
-  kicks in if a `.env` file exists in the target project.
+- **Container starts but can't reach Ollama.** With the default Ollama
+  config the wrapper injects
+  `CLAWD_BASE_URL=http://host.docker.internal:11434/v1` for you. If
+  Ollama itself binds loopback only (Linux default), restart it with
+  `OLLAMA_HOST=0.0.0.0`. For non-default providers, see step 1 of
+  [run clawd in a sandbox](run-the-sandbox.md).
 - **`docker: command not found`.** Install Docker Desktop, OrbStack,
   Rancher Desktop, or Docker Engine.
 

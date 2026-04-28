@@ -28,12 +28,18 @@ fi
 # Pass .env through, but rewrite localhost / 127.0.0.1 to host.docker.internal
 # so a host-side Ollama / Langfuse / vLLM is reachable from inside the container.
 # The --add-host below makes host.docker.internal resolve on Linux too.
+#
+# When no .env exists, fall back to the same default clawd uses outside the
+# sandbox (Ollama on localhost) — but with localhost already rewritten so
+# the first prompt doesn't fail with "couldn't reach http://localhost:...".
 DOCKER_ENV=()
 if [[ -f .env ]]; then
     TMP_ENV=$(mktemp)
     trap 'rm -f "$TMP_ENV"' EXIT
     sed -E 's#//(127\.0\.0\.1|localhost)#//host.docker.internal#g' .env > "$TMP_ENV"
     DOCKER_ENV=(--env-file "$TMP_ENV")
+else
+    DOCKER_ENV=(-e "CLAWD_BASE_URL=http://host.docker.internal:11434/v1")
 fi
 
 docker run --rm -it \
