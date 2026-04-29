@@ -17,4 +17,11 @@ WORKDIR /workspace
 ENV CLAWD_WORKTREE_ROOT=/workspace/.clawd-worktrees \
     PATH=/app/.venv/bin:$PATH
 
+# The bind-mounted /workspace is owned by the host user, but the container runs
+# as root. Without this, every git invocation inside the container fails with
+# "fatal: detected dubious ownership". Safe in the sandbox: /workspace is the
+# only repo we ever touch.
+RUN git config --system --add safe.directory /workspace \
+    && git config --system --add safe.directory '/workspace/.clawd-worktrees/*'
+
 ENTRYPOINT ["/app/.venv/bin/clawd"]
