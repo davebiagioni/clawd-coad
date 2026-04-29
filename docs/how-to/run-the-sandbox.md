@@ -20,26 +20,49 @@ it's a separate UX rather than the default — see
 
 ## Steps
 
-### 1. (Optional) configure `.env` in the target project
+### 1. (Optional) configure provider settings
 
-If you're using a non-default provider (OpenAI, Anthropic, OpenRouter,
-etc.), drop a `.env` in your target project:
+The wrapper layers four sources of `CLAWD_*` / `LANGFUSE_*` config, in
+increasing precedence:
+
+1. **Built-in default** — `CLAWD_BASE_URL=http://host.docker.internal:11434/v1`
+   so out-of-the-box Ollama just works.
+2. **`~/.clawd/.env`** — global; cloud keys you reuse across projects.
+3. **`<project>/.env`** — project-local; wins over global.
+4. **Shell env** — any `CLAWD_*` / `LANGFUSE_*` set in the shell that
+   ran the wrapper; wins over everything else.
+
+Pick whichever fits. Common shapes:
+
+**Default Ollama.** Nothing to do — start the wrapper and go.
+
+**Cloud provider, one project only.** Drop a project `.env`:
 
 ```bash
 cd ~/your-project
-cp /path/to/clawd-coad/.env.example .env
-$EDITOR .env
+cat > .env <<'EOF'
+CLAWD_BASE_URL=https://api.groq.com/openai/v1
+CLAWD_MODEL=llama-3.3-70b-versatile
+CLAWD_API_KEY=gsk_...
+EOF
 ```
 
-The `.env` lives in your **target project**, not in the clawd repo —
-that's the directory the wrapper reads from. The wrapper rewrites
-`localhost` and `127.0.0.1` inside `.env` to `host.docker.internal` so
-a host-side Ollama / vLLM / Langfuse stays reachable from inside the
+**Cloud provider, every project.** Put it once in `~/.clawd/.env`:
+
+```bash
+mkdir -p ~/.clawd
+$EDITOR ~/.clawd/.env
+```
+
+**Cloud key in your shell only.** `export CLAWD_API_KEY=...` (perhaps
+in `~/.zshenv` so it's not in any file the agent can read). The wrapper
+forwards it via `-e CLAWD_API_KEY` so it never lands on disk inside the
 container.
 
-If you're sticking with the default (Ollama at `localhost:11434`), no
-`.env` is needed — the wrapper injects
-`CLAWD_BASE_URL=http://host.docker.internal:11434/v1` automatically.
+`.env` files (1 + 2) are localhost-rewritten to `host.docker.internal`
+so host-side Ollama / vLLM / Langfuse stays reachable. Shell-passed
+vars are *not* rewritten — write `host.docker.internal` directly if
+you're pointing at a host service that way.
 
 ### 2. Run the wrapper from the target project
 

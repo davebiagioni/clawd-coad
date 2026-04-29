@@ -25,22 +25,44 @@ if [[ $FORCE_BUILD -eq 1 ]] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; 
     docker build -t "$IMAGE" "$REPO_ROOT"
 fi
 
-# Pass .env through, but rewrite localhost / 127.0.0.1 to host.docker.internal
-# so a host-side Ollama / Langfuse / vLLM is reachable from inside the container.
-# The --add-host below makes host.docker.internal resolve on Linux too.
+# Build the env passed to the container, in increasing precedence:
 #
-# When no .env exists, fall back to the same default clawd uses outside the
-# sandbox (Ollama on localhost) — but with localhost already rewritten so
-# the first prompt doesn't fail with "couldn't reach http://localhost:...".
-DOCKER_ENV=()
-if [[ -f .env ]]; then
-    TMP_ENV=$(mktemp)
-    trap 'rm -f "$TMP_ENV"' EXIT
-    sed -E 's#//(127\.0\.0\.1|localhost)#//host.docker.internal#g' .env > "$TMP_ENV"
-    DOCKER_ENV=(--env-file "$TMP_ENV")
-else
-    DOCKER_ENV=(-e "CLAWD_BASE_URL=http://host.docker.internal:11434/v1")
+#   1. baseline default — Ollama at the rewritten localhost
+#   2. ~/.clawd/.env  (global; cloud keys you reuse across projects)
+#   3. <cwd>/.env     (project-local; wins over global)
+#   4. CLAWD_*/LANGFUSE_* in the host shell (overlay; wins over .env files)
+#
+# .env files are localhost-rewritten so a host-side Ollama / Langfuse / vLLM
+# is reachable from inside the container. Shell-passed vars are NOT rewritten
+# — set host.docker.internal explicitly if you're pointing at a host service.
+DOCKER_ENV=(-e "CLAWD_BASE_URL=http://host.docker.internal:11434/v1")
+TMP_FILES=()
+trap 'rm -f "${TMP_FILES[@]}"' EXIT
+
+rewrite_env() {
+    # rewrite_env <src> — write a localhost-rewritten copy to a tmp file, echo path
+    local src="$1"
+    local dst
+    dst=$(mktemp)
+    TMP_FILES+=("$dst")
+    sed -E 's#//(127\.0\.0\.1|localhost)#//host.docker.internal#g' "$src" > "$dst"
+    echo "$dst"
+}
+
+GLOBAL_ENV="$HOME/.clawd/.env"
+if [[ -f "$GLOBAL_ENV" ]]; then
+    DOCKER_ENV+=(--env-file "$(rewrite_env "$GLOBAL_ENV")")
 fi
+
+if [[ -f .env ]]; then
+    DOCKER_ENV+=(--env-file "$(rewrite_env .env)")
+fi
+
+# `-e VAR` (no `=value`) tells docker to inherit from the parent shell, but
+# only when the var is actually set — so this is a no-op for unset vars.
+while IFS= read -r var; do
+    DOCKER_ENV+=(-e "$var")
+done < <(compgen -v | grep -E '^(CLAWD_|LANGFUSE_)')
 
 docker run --rm -it \
     --add-host=host.docker.internal:host-gateway \
